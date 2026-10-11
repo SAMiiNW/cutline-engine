@@ -1,0 +1,11 @@
+{
+  "network": "StudioNet",
+  "account": "SAMiiNW",
+  "contractAddress": "0x26677E077BF415fCe2F3700459f55BD63496B37b",
+  "deploymentTransaction": "0x623df5b54e7adabb044b5557aaf309a742f5c8c5c73c08d494b0c9535d043242",
+  "deploymentConsensus": "MAJORITY_AGREE",
+  "deploymentExecution": "SUCCESS",
+  "sourceSha256": "4bba63d1f2faca10f4cc3a5b3aa3145a0116273eb8f2b26ff58c7b0a5c7342c0",
+  "sourceCommit": "54d2bb0d2bad86ba6f96f42b03dd474d03799ede",
+  "repository": "https://github.com/SAMiiNW/cutline-engine"
+}
