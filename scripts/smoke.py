@@ -5,7 +5,21 @@ from pathlib import Path
 
 from genlayer_py import create_account, create_client
 from genlayer_py.chains import studionet
-from genlayer_py.types import TransactionStatus
+from genlayer_py.contracts import actions as contract_actions
+
+
+def calldata_compat(method=None, args=None, kwargs=None):
+    result = {}
+    if method is not None:
+        result['method'] = method
+    if args:
+        result['args'] = args
+    if kwargs:
+        result['kwargs'] = kwargs
+    return result
+
+
+contract_actions.make_calldata_object = calldata_compat
 
 
 ROOT = Path(__file__).parents[1]
@@ -30,14 +44,15 @@ def write(number, name, args):
     print(name + '_tx=' + str(tx), flush=True)
     receipt = active.wait_for_transaction_receipt(
         transaction_hash=tx,
-        status=TransactionStatus.FINALIZED,
+        wait_until='finalized',
         retries=180,
         interval=5000,
         full_transaction=True,
     )
-    leader = (receipt.get('consensus_data', {}).get('leader_receipt') or [{}])[0]
+    leaders = receipt.get('consensus_data', {}).get('leader_receipt') or []
+    leaders = [leaders] if isinstance(leaders, dict) else leaders
     assert receipt.get('result_name') == 'MAJORITY_AGREE'
-    assert leader.get('execution_result') == 'SUCCESS'
+    assert any(item.get('execution_result') == 'SUCCESS' for item in leaders)
     return str(tx)
 
 

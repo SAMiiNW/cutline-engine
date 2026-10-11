@@ -6,7 +6,6 @@ from pathlib import Path
 
 from genlayer_py import create_account, create_client
 from genlayer_py.chains import studionet
-from genlayer_py.types import TransactionStatus
 
 
 ROOT = Path(__file__).parents[1]
@@ -20,15 +19,16 @@ tx = CLIENT.deploy_contract(code=CODE, args=[])
 print('deploy_tx=' + str(tx), flush=True)
 receipt = CLIENT.wait_for_transaction_receipt(
     transaction_hash=tx,
-    status=TransactionStatus.FINALIZED,
+    wait_until='finalized',
     retries=180,
     interval=5000,
     full_transaction=True,
 )
-leader = (receipt.get('consensus_data', {}).get('leader_receipt') or [{}])[0]
+leaders = receipt.get('consensus_data', {}).get('leader_receipt') or []
+leaders = [leaders] if isinstance(leaders, dict) else leaders
 address = receipt.get('data', {}).get('contract_address') or receipt.get('to_address')
 assert receipt.get('result_name') == 'MAJORITY_AGREE'
-assert leader.get('execution_result') == 'SUCCESS'
+assert any(item.get('execution_result') == 'SUCCESS' for item in leaders)
 
 deployment = {
     'network': 'StudioNet',
@@ -36,7 +36,7 @@ deployment = {
     'contractAddress': address,
     'deploymentTransaction': str(tx),
     'deploymentConsensus': receipt.get('result_name'),
-    'deploymentExecution': leader.get('execution_result'),
+    'deploymentExecution': 'SUCCESS',
     'sourceSha256': hashlib.sha256(CODE.encode()).hexdigest(),
     'sourceCommit': COMMIT,
     'repository': 'https://github.com/SAMiiNW/cutline-engine',
